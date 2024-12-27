@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f4f4f4;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+        }
+
+        .cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100px;
+            height: 100px;
+            font-size: 36px;
+            border: 2px solid #333;
+            background-color: #fff;
+            cursor: pointer;
+        }
+
+        .cell:hover {
+            background-color: #f0f0f0;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #computerBtn {
+            background-color: #2196F3;
+        }
+
+        #computerBtn:hover {
+            background-color: #0b7dda;
+        }
+
+        #difficultyBtn {
+            background-color: #ff9800;
+        }
+
+        #difficultyBtn:hover {
+            background-color: #fb8c00;
+        }
+    </style>
+</head>
+<body>
+
+    <div>
+        <div class="game-container" id="gameBoard">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        <div class="message" id="message">Player X's Turn</div>
+        <button onclick="resetGame()">Restart Game</button>
+        <button id="computerBtn" onclick="startComputerGame()">Play Against Computer</button>
+        <button id="difficultyBtn" onclick="toggleDifficulty()">Switch Difficulty</button>
+    </div>
+
+    <script>
+        let currentPlayer = 'X';
+        let gameBoard = ['', '', '', '', '', '', '', '', ''];
+        let gameOver = false;
+        let isComputerGame = false;
+        let isHardMode = true; // Set to hard by default for a challenging experience
+
+        const cells = document.querySelectorAll('.cell');
+        const messageElement = document.getElementById('message');
+
+        // Handle cell click event
+        cells.forEach(cell => {
+            cell.addEventListener('click', () => {
+                if (gameOver || cell.textContent !== '' || (isComputerGame && currentPlayer === 'O')) return;
+
+                const index = cell.getAttribute('data-index');
+                gameBoard[index] = currentPlayer;
+                cell.textContent = currentPlayer;
+
+                if (checkWin()) {
+                    messageElement.textContent = `Player ${currentPlayer} Wins!`;
+                    gameOver = true;
+                    return;
+                }
+
+                if (gameBoard.every(cell => cell !== '')) {
+                    messageElement.textContent = 'It\'s a Draw!';
+                    gameOver = true;
+                    return;
+                }
+
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                messageElement.textContent = `Player ${currentPlayer}'s Turn`;
+
+                if (isComputerGame && currentPlayer === 'O') {
+                    setTimeout(() => {
+                        hardComputerMove(); // Use hard mode logic
+                    }, 500);
+                }
+            });
+        });
+
+        // Easy computer move (random move)
+        function easyComputerMove() {
+            const availableCells = gameBoard.map((cell, index) => cell === '' ? index : -1).filter(index => index !== -1);
+            const randomIndex = availableCells[Math.floor(Math.random() * availableCells.length)];
+
+            gameBoard[randomIndex] = 'O';
+            cells[randomIndex].textContent = 'O';
+
+            if (checkWin()) {
+                messageElement.textContent = `Computer Wins!`;
+                gameOver = true;
+                return;
+            }
+
+            if (gameBoard.every(cell => cell !== '')) {
+                messageElement.textContent = 'It\'s a Draw!';
+                gameOver = true;
+                return;
+            }
+
+            currentPlayer = 'X';
+            messageElement.textContent = `Player ${currentPlayer}'s Turn`;
+        }
+
+        // Hard computer move (Minimax algorithm with Alpha-Beta Pruning)
+        function hardComputerMove() {
+            const bestMove = minimax(gameBoard, 'O', -Infinity, Infinity);
+            gameBoard[bestMove] = 'O';
+            cells[bestMove].textContent = 'O';
+
+            if (checkWin()) {
+                messageElement.textContent = `Computer Wins!`;
+                gameOver = true;
+                return;
+            }
+
+            if (gameBoard.every(cell => cell !== '')) {
+                messageElement.textContent = 'It\'s a Draw!';
+                gameOver = true;
+                return;
+            }
+
+            currentPlayer = 'X';
+            messageElement.textContent = `Player ${currentPlayer}'s Turn`;
+        }
+
+        // Minimax algorithm with Alpha-Beta Pruning for unbeatable AI
+        function minimax(board, player, alpha, beta) {
+            const availableCells = board.map((cell, index) => cell === '' ? index : -1).filter(index => index !== -1);
+
+            if (checkWinForPlayer(board, 'X')) return -1; // X wins
+            if (checkWinForPlayer(board, 'O')) return 1;  // O wins
+            if (availableCells.length === 0) return 0; // Draw
+
+            let bestMove = -1;
+            let bestScore = (player === 'O') ? -Infinity : Infinity;
+
+            for (const cell of availableCells) {
+                board[cell] = player;
+                const score = minimax(board, player === 'O' ? 'X' : 'O', alpha, beta);
+                board[cell] = ''; // Undo the move
+
+                if (player === 'O') {
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = cell;
+                    }
+                    alpha = Math.max(alpha, bestScore);
+                } else {
+                    if (score < bestScore) {
+                        bestScore = score;
+                        bestMove = cell;
+                    }
+                    beta = Math.min(beta, bestScore);
+                }
+
+                // Alpha-Beta pruning
+                if (beta <= alpha) {
+                    break;
+                }
+            }
+
+            return bestMove;
+        }
+
+        // Check if a player has won
+        function checkWinForPlayer(board, player) {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Horizontal
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Vertical
+                [0, 4, 8], [2, 4, 6] // Diagonal
+            ];
+
+            return winPatterns.some(pattern => {
+                const [a, b, c] = pattern;
+                return board[a] === player && board[b] === player && board[c] === player;
+            });
+        }
+
+        // Check for a win
+        function checkWin() {
+            if (checkWinForPlayer(gameBoard, 'X')) {
+                messageElement.textContent = 'Player X Wins!';
+                gameOver = true;
+                return true;
+            }
+            if (checkWinForPlayer(gameBoard, 'O')) {
+                messageElement.textContent = 'Player O Wins!';
+                gameOver = true;
+                return true;
+            }
+            return false;
+        }
+
+        function resetGame() {
+            gameBoard = ['', '', '', '', '', '', '', '', ''];
+            gameOver = false;
+            currentPlayer = 'X';
+            cells.forEach(cell => cell.textContent = '');
+            messageElement.textContent = `Player ${currentPlayer}'s Turn`;
+        }
+
+        function startComputerGame() {
+            isComputerGame = true;
+            resetGame();
+            currentPlayer = 'X';
+            messageElement.textContent = `Player ${currentPlayer}'s Turn`;
+        }
+
+        function toggleDifficulty() {
+            isHardMode = !isHardMode;
+            document.getElementById('difficultyBtn').textContent = isHardMode ? 'Switch to Easy Mode' : 'Switch to Hard Mode';
+        }
+    </script>
+
+</body>
+</html>
