@@ -112,6 +112,12 @@
         .reset-btn:hover {
             background-color: #e53935;
         }
+
+        footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
     </style>
 </head>
 <body>
@@ -134,6 +140,8 @@
     <button class="reset-btn" onclick="resetGame()">Restart Game</button>
     <button id="computerBtn" onclick="startComputerGame()">Play Against Computer</button>
     <button id="difficultyBtn" onclick="toggleDifficulty()">Switch Difficulty</button>
+
+    <footer>Designed and coded by Jerome Kingsley</footer>
 
     <script>
         let currentPlayer = 'X';
@@ -273,7 +281,7 @@
                 [0, 4, 8], [2, 4, 6]              // Diagonal
             ];
 
-            return winPatterns.some(pattern => 
+            return winPatterns.some(pattern =>
                 pattern.every(index => board[index] === player)
             );
         }
