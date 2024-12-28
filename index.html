@@ -6,54 +6,83 @@
     <title>Tic-Tac-Toe</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f8;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            background: #f4f4f4;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: #4A90E2;
+            font-size: 24px;
+            margin-bottom: 15px;
         }
 
         .game-container {
             display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-template-rows: repeat(3, 100px);
-            gap: 5px;
+            grid-template-columns: repeat(3, 80px);
+            grid-template-rows: repeat(3, 80px);
+            gap: 8px;
+            margin-top: 20px;
         }
 
         .cell {
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 100px;
-            height: 100px;
-            font-size: 36px;
-            border: 2px solid #333;
-            background-color: #fff;
+            width: 80px;
+            height: 80px;
+            font-size: 32px;
+            font-weight: bold;
+            background-color: #ffffff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
             cursor: pointer;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, background-color 0.2s ease;
         }
 
         .cell:hover {
-            background-color: #f0f0f0;
+            background-color: #f8f8f8;
+            transform: scale(1.05);
+        }
+
+        .cell.X {
+            color: #E94E77;
+        }
+
+        .cell.O {
+            color: #4A90E2;
         }
 
         .message {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 20px;
-            font-weight: bold;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-top: 15px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
         }
 
         button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
+            padding: 8px 15px;
+            margin: 8px;
+            font-size: 14px;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 5px;
-            margin-top: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
@@ -75,34 +104,43 @@
         #difficultyBtn:hover {
             background-color: #fb8c00;
         }
+
+        .reset-btn {
+            background-color: #f44336;
+        }
+
+        .reset-btn:hover {
+            background-color: #e53935;
+        }
     </style>
 </head>
 <body>
 
-    <div>
-        <div class="game-container" id="gameBoard">
-            <div class="cell" data-index="0"></div>
-            <div class="cell" data-index="1"></div>
-            <div class="cell" data-index="2"></div>
-            <div class="cell" data-index="3"></div>
-            <div class="cell" data-index="4"></div>
-            <div class="cell" data-index="5"></div>
-            <div class="cell" data-index="6"></div>
-            <div class="cell" data-index="7"></div>
-            <div class="cell" data-index="8"></div>
-        </div>
-        <div class="message" id="message">Player X's Turn</div>
-        <button onclick="resetGame()">Restart Game</button>
-        <button id="computerBtn" onclick="startComputerGame()">Play Against Computer</button>
-        <button id="difficultyBtn" onclick="toggleDifficulty()">Switch Difficulty</button>
+    <h1>Tic-Tac-Toe Game</h1>
+    <div class="game-container" id="gameBoard">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
     </div>
+
+    <div class="message" id="message">Player X's Turn</div>
+
+    <button class="reset-btn" onclick="resetGame()">Restart Game</button>
+    <button id="computerBtn" onclick="startComputerGame()">Play Against Computer</button>
+    <button id="difficultyBtn" onclick="toggleDifficulty()">Switch Difficulty</button>
 
     <script>
         let currentPlayer = 'X';
         let gameBoard = ['', '', '', '', '', '', '', '', ''];
         let gameOver = false;
         let isComputerGame = false;
-        let isHardMode = true; // Set to hard by default for a challenging experience
+        let isHardMode = true;
 
         const cells = document.querySelectorAll('.cell');
         const messageElement = document.getElementById('message');
@@ -115,6 +153,7 @@
                 const index = cell.getAttribute('data-index');
                 gameBoard[index] = currentPlayer;
                 cell.textContent = currentPlayer;
+                cell.classList.add(currentPlayer);
 
                 if (checkWin()) {
                     messageElement.textContent = `Player ${currentPlayer} Wins!`;
@@ -133,7 +172,7 @@
 
                 if (isComputerGame && currentPlayer === 'O') {
                     setTimeout(() => {
-                        hardComputerMove(); // Use hard mode logic
+                        hardComputerMove();
                     }, 500);
                 }
             });
@@ -146,6 +185,7 @@
 
             gameBoard[randomIndex] = 'O';
             cells[randomIndex].textContent = 'O';
+            cells[randomIndex].classList.add('O');
 
             if (checkWin()) {
                 messageElement.textContent = `Computer Wins!`;
@@ -168,6 +208,7 @@
             const bestMove = minimax(gameBoard, 'O', -Infinity, Infinity);
             gameBoard[bestMove] = 'O';
             cells[bestMove].textContent = 'O';
+            cells[bestMove].classList.add('O');
 
             if (checkWin()) {
                 messageElement.textContent = `Computer Wins!`;
@@ -229,48 +270,43 @@
             const winPatterns = [
                 [0, 1, 2], [3, 4, 5], [6, 7, 8], // Horizontal
                 [0, 3, 6], [1, 4, 7], [2, 5, 8], // Vertical
-                [0, 4, 8], [2, 4, 6] // Diagonal
+                [0, 4, 8], [2, 4, 6]              // Diagonal
             ];
 
-            return winPatterns.some(pattern => {
-                const [a, b, c] = pattern;
-                return board[a] === player && board[b] === player && board[c] === player;
-            });
+            return winPatterns.some(pattern => 
+                pattern.every(index => board[index] === player)
+            );
         }
 
-        // Check for a win
+        // Check if the game is won
         function checkWin() {
-            if (checkWinForPlayer(gameBoard, 'X')) {
-                messageElement.textContent = 'Player X Wins!';
-                gameOver = true;
-                return true;
-            }
-            if (checkWinForPlayer(gameBoard, 'O')) {
-                messageElement.textContent = 'Player O Wins!';
-                gameOver = true;
-                return true;
-            }
-            return false;
+            return checkWinForPlayer(gameBoard, 'X') || checkWinForPlayer(gameBoard, 'O');
         }
 
-        function resetGame() {
-            gameBoard = ['', '', '', '', '', '', '', '', ''];
-            gameOver = false;
-            currentPlayer = 'X';
-            cells.forEach(cell => cell.textContent = '');
-            messageElement.textContent = `Player ${currentPlayer}'s Turn`;
-        }
-
+        // Start playing against computer
         function startComputerGame() {
-            isComputerGame = true;
             resetGame();
-            currentPlayer = 'X';
+            isComputerGame = true;
             messageElement.textContent = `Player ${currentPlayer}'s Turn`;
         }
 
+        // Toggle Difficulty Level
         function toggleDifficulty() {
             isHardMode = !isHardMode;
             document.getElementById('difficultyBtn').textContent = isHardMode ? 'Switch to Easy Mode' : 'Switch to Hard Mode';
+        }
+
+        // Reset the game
+        function resetGame() {
+            currentPlayer = 'X';
+            gameBoard = ['', '', '', '', '', '', '', '', ''];
+            gameOver = false;
+            isComputerGame = false;
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('X', 'O');
+            });
+            messageElement.textContent = `Player ${currentPlayer}'s Turn`;
         }
     </script>
 
